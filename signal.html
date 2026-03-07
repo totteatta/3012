@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>totteatta | SIGNAL (M)</title>
+    <style>
+        body {
+            margin: 0; background: #000; color: #eee;
+            font-family: 'Courier New', monospace;
+            overflow: hidden; touch-action: manipulation;
+        }
+        #game-ui {
+            position: absolute; top: 20px; width: 100%; text-align: center;
+            letter-spacing: 5px; font-size: 14px; z-index: 10;
+        }
+        canvas { display: block; }
+        #msg {
+            position: absolute; top: 50%; width: 100%; text-align: center;
+            transform: translateY(-50%); font-size: 20px; display: none;
+            color: #fff; text-shadow: 0 0 10px #fff;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-ui">
+    SCORE: <span id="score">0</span><br>
+    <span id="combo" style="font-size: 10px; color: #444;">COMBO: 0</span>
+</div>
+<div id="msg">DISCONNECTED<br><span style="font-size:10px; color:#222;">TAP TO RESTART</span></div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const comboEl = document.getElementById('combo');
+    const msgEl = document.getElementById('msg');
+
+    let score = 0;
+    let combo = 0;
+    let playing = true;
+    let targets = [];
+    let nextSpawn = 0;
+    let speed = 3;
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function spawn() {
+        targets.push({ x: canvas.width, w: 10, hit: false });
+        nextSpawn = Date.now() + Math.random() * 1500 + 800 - (Math.min(combo * 20, 500));
+    }
+
+    function update() {
+        if (!playing) return;
+
+        // 背景（残像効果を高めるためにフェードを調整）
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 判定ライン（グレーの点線）
+        const lineX = 60;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]); // 点線
+        ctx.beginPath();
+        ctx.moveTo(lineX, 0);
+        ctx.lineTo(lineX, canvas.height);
+        ctx.stroke();
+        ctx.setLineDash([]); // 元に戻す
+
+        if (Date.now() > nextSpawn) spawn();
+
+        for (let i = targets.length - 1; i >= 0; i--) {
+            let t = targets[i];
+            t.x -= speed + (combo * 0.1);
+
+            // 描画
+            ctx.fillStyle = t.hit ? '#fff' : '#222'; // グレーから白へ
+            
+            // 棒ではなく、より「波」に近いデザインに
+            ctx.beginPath();
+            ctx.arc(t.x, canvas.height/2, 50, -Math.PI/2, Math.PI/2);
+            ctx.lineWidth = t.hit ? 3 : 1;
+            ctx.strokeStyle = t.hit ? '#fff' : '#444';
+            ctx.stroke();
+
+            if (t.x < 0 && !t.hit) {
+                gameOver();
+            }
+            if (t.x < -100) targets.splice(i, 1);
+        }
+
+        requestAnimationFrame(update);
+    }
+
+    function handleInput(e) {
+        e.preventDefault();
+        if (!playing) {
+            reset();
+            return;
+        }
+
+        const lineX = 60;
+        let hitSuccess = false;
+
+        for (let t of targets) {
+            if (Math.abs(t.x - lineX) < 40 && !t.hit) {
+                t.hit = true;
+                hitSuccess = true;
+                score += 100 + (combo * 10);
+                combo++;
+                // ヒット時の演出（画面全体を白く光らせる）
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                break;
+            }
+        }
+
+        if (!hitSuccess) {
+            gameOver();
+        } else {
+            scoreEl.innerText = score;
+            comboEl.innerText = `COMBO: ${combo}`;
+            scoreEl.style.textShadow = `0 0 ${Math.min(combo, 20)}px #fff`; // コンボで光る
+        }
+    }
+
+    function gameOver() {
+        playing = false;
+        msgEl.style.display = 'block';
+        // ミス時の演出（画面を反転させる）
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function reset() {
+        score = 0;
+        combo = 0;
+        targets = [];
+        playing = true;
+        scoreEl.innerText = "0";
+        comboEl.innerText = "COMBO: 0";
+        msgEl.style.display = 'none';
+        scoreEl.style.textShadow = 'none';
+        update();
+    }
+
+    window.addEventListener('touchstart', handleInput);
+    window.addEventListener('mousedown', handleInput);
+
+    update();
+</script>
+</body>
+</html>
