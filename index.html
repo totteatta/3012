@@ -145,7 +145,7 @@
 
         async function loadFiles() {
             const user = "totteatta";
-            const repo = "main";
+            const repo = "3012";
             const url = `https://api.github.com/repos/${user}/${repo}/contents/`;
             const container = document.getElementById('dynamic-files');
 
@@ -156,7 +156,7 @@
                 
                 htmlFiles.forEach((file, index) => {
                     const a = document.createElement('a');
-                    a.href = `https://totteatta.github.io/main/${file.name}`;
+                    a.href = `https://totteatta.github.io/3012/${file.name}`;
                     a.className = 'file-item';
                     a.innerText = file.name.replace('.html', '');
                     container.appendChild(a);
