@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>経過時間＆コストカウンター</title>
+    <style>
+        :root {
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --primary-color: #007aff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .toggle-container {
+            display: flex;
+            background-color: #eed;
+            background-color: #eef2f7;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 30px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            border: none;
+            background: none;
+            padding: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            color: #666;
+        }
+
+        .toggle-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,122,255,0.2);
+        }
+
+        .counter-display {
+            margin-bottom: 25px;
+        }
+
+        .value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #111;
+            line-height: 1;
+        }
+
+        .unit {
+            font-size: 1.2rem;
+            font-weight: normal;
+            margin-left: 4px;
+            color: #444;
+        }
+
+        .sub-value {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #eaeaea;
+            margin: 25px 0;
+        }
+
+        .cost-display h2 {
+            font-size: 0.9rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+        }
+
+        .cost-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ff3b30;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>2026年4月2日からの経過</h1>
+
+    <div class="toggle-container">
+        <button class="toggle-btn active" id="day-mode-btn" onclick="setMode('day')">日モード</button>
+        <button class="toggle-btn" id="hour-mode-btn" onclick="setMode('hour')">時間モード</button>
+    </div>
+
+    <div class="counter-display">
+        <div class="value" id="main-counter">0<span class="unit">日</span></div>
+        <div class="sub-value" id="sub-counter">（または 0時間）</div>
+    </div>
+
+    <hr>
+
+    <div class="cost-display">
+        <h2 id="cost-title">99,800円の1日あたり換算</h2>
+        <div class="cost-amount" id="cost-value">¥0</div>
+    </div>
+</div>
+
+<script>
+    // ターゲットとなる日付 (2026年4月2日 00:00:00)
+    const targetDate = new Date('2026-04-02T00:00:00');
+    const totalAmount = 99800;
+    let currentMode = 'day'; // 'day' または 'hour'
+
+    function updateCounter() {
+        const now = new Date();
+        const diffMs = now - targetDate; // 経過ミリ秒
+
+        // 各種単位に変換
+        const diffHoursTotal = diffMs / (1000 * 60 * 60);
+        const diffDaysTotal = diffHoursTotal / 24;
+
+        // エレメントの取得
+        const mainCounter = document.getElementById('main-counter');
+        const subCounter = document.getElementById('sub-counter');
+        const costTitle = document.getElementById('cost-title');
+        const costValue = document.getElementById('cost-value');
+
+        if (currentMode === 'day') {
+            // 日モード：メインは小数点第2位まで表示
+            mainCounter.innerHTML = `${diffDaysTotal.toFixed(2)}<span class="unit">日</span>`;
+            subCounter.innerText = `（細かく言うと: ${Math.floor(diffHoursTotal).toLocaleString()}時間）`;
+            
+            costTitle.innerText = "99,800円の 1日あたり";
+            // 99800円 ÷ 経過日数
+            const costPerDay = diffDaysTotal > 0 ? (totalAmount / diffDaysTotal) : totalAmount;
+            costValue.innerText = `¥${costPerDay.toFixed(2)}`;
+        } else {
+            // 時間モード：メインは1時間単位（整数）または細かく小数点表示
+            mainCounter.innerHTML = `${diffHoursTotal.toFixed(1)}<span class="unit">時間</span>`;
+            subCounter.innerText = `（日数換算: ${diffDaysTotal.toFixed(1)}日）`;
+            
+            costTitle.innerText = "99,800円の 1時間あたり";
+            // 99800円 ÷ 経過時間
+            const costPerHour = diffHoursTotal > 0 ? (totalAmount / diffHoursTotal) : totalAmount;
+            costValue.innerText = `¥${costPerHour.toFixed(2)}`;
+        }
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        
+        // ボタンのアクティブ状態を切り替え
+        document.getElementById('day-mode-btn').classList.toggle('active', mode === 'day');
+        document.getElementById('hour-mode-btn').classList.toggle('active', mode === 'hour');
+        
+        // 即座に表示を更新
+        updateCounter();
+    }
+
+    // 1秒ごとに数値を更新（リアルタイム）
+    setInterval(updateCounter, 1000);
+    
+    // 初回起動時
+    updateCounter();
+</script>
+
+</body>
+</html>
