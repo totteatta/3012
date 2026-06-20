@@ -10,7 +10,8 @@
             --card-bg: #ffffff;
             --text-color: #333333;
             --primary-color: #007aff;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+            --apple-green: #34c759;
+            --shadow: 0 10px 20px rgba(0,0,0,0.05), 0 2px 6px rgba(0,0,0,0.05);
         }
 
         body {
@@ -18,45 +19,30 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 40px 20px;
             box-sizing: border-box;
-        }
-
-        .container {
-            background-color: var(--card-bg);
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 450px;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 1.2rem;
-            color: #666;
-            margin-bottom: 20px;
-            font-weight: 500;
         }
 
         .toggle-container {
             display: flex;
-            background-color: #eed;
             background-color: #eef2f7;
             border-radius: 8px;
             padding: 4px;
             margin-bottom: 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .toggle-btn {
             flex: 1;
             border: none;
             background: none;
-            padding: 10px;
+            padding: 12px;
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
@@ -71,46 +57,84 @@
             box-shadow: 0 2px 4px rgba(0,122,255,0.2);
         }
 
-        .counter-display {
+        .dashboard {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 950px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            flex: 1;
+            min-width: 300px;
+            max-width: 450px;
+            box-sizing: border-box;
+            border-top: 5px solid var(--primary-color);
+        }
+
+        .card.airpods {
+            border-top-color: var(--apple-green);
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            color: #222;
+            margin: 0 0 5px 0;
+            font-weight: 700;
+        }
+
+        .start-date {
+            font-size: 0.85rem;
+            color: #888;
             margin-bottom: 25px;
         }
 
+        .counter-display {
+            margin-bottom: 20px;
+        }
+
         .value {
-            font-size: 2.5rem;
+            font-size: 2.3rem;
             font-weight: 800;
             color: #111;
-            line-height: 1;
+            line-height: 1.1;
         }
 
         .unit {
-            font-size: 1.2rem;
-            font-weight: normal;
+            font-size: 1.1rem;
+            font-weight: 600;
             margin-left: 4px;
-            color: #444;
+            color: #555;
         }
 
         .sub-value {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #888;
-            margin-top: 5px;
+            margin-top: 6px;
         }
 
         hr {
             border: none;
-            border-top: 1px solid #eaeaea;
-            margin: 25px 0;
+            border-top: 1px solid #f0f0f0;
+            margin: 20px 0;
         }
 
         .cost-display h2 {
-            font-size: 0.9rem;
-            color: #888;
+            font-size: 0.85rem;
+            color: #666;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 10px;
+            letter-spacing: 0.03em;
+            margin: 0 0 8px 0;
         }
 
         .cost-amount {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
             color: #ff3b30;
         }
@@ -118,84 +142,117 @@
 </head>
 <body>
 
-<div class="container">
-    <h1>2026年4月2日からの経過</h1>
+<!-- モード切り替え（全体共通） -->
+<div class="toggle-container">
+    <button class="toggle-btn active" id="day-mode-btn" onclick="setMode('day')">日モード</button>
+    <button class="toggle-btn" id="hour-mode-btn" onclick="setMode('hour')">時間モード</button>
+</div>
 
-    <div class="toggle-container">
-        <button class="toggle-btn active" id="day-mode-btn" onclick="setMode('day')">日モード</button>
-        <button class="toggle-btn" id="hour-mode-btn" onclick="setMode('hour')">時間モード</button>
+<div class="dashboard">
+    <!-- 元のカード（99,800円） -->
+    <div class="card">
+        <h1>登録案件 A</h1>
+        <div class="start-date">開始日: 2026年4月2日</div>
+        
+        <div class="counter-display">
+            <div class="value" id="main-counter-1">0<span class="unit">日</span></div>
+            <div class="sub-value" id="sub-counter-1">（または 0時間）</div>
+        </div>
+        <hr>
+        <div class="cost-display">
+            <h2 id="cost-title-1">99,800円の換算</h2>
+            <div class="cost-amount" id="cost-value-1">¥0</div>
+        </div>
     </div>
 
-    <div class="counter-display">
-        <div class="value" id="main-counter">0<span class="unit">日</span></div>
-        <div class="sub-value" id="sub-counter">（または 0時間）</div>
-    </div>
-
-    <hr>
-
-    <div class="cost-display">
-        <h2 id="cost-title">99,800円の1日あたり換算</h2>
-        <div class="cost-amount" id="cost-value">¥0</div>
+    <!-- 追加：AirPods 2（20,000円） -->
+    <div class="card airpods">
+        <h1>AirPods 2</h1>
+        <div class="start-date">購入日: 2022年2月5日</div>
+        
+        <div class="counter-display">
+            <div class="value" id="main-counter-2">0<span class="unit">日</span></div>
+            <div class="sub-value" id="sub-counter-2">（または 0時間）</div>
+        </div>
+        <hr>
+        <div class="cost-display">
+            <h2 id="cost-title-2">20,000円の換算</h2>
+            <div class="cost-amount" id="cost-value-2">¥0</div>
+        </div>
     </div>
 </div>
 
 <script>
-    // ターゲットとなる日付 (2026年4月2日 00:00:00)
-    const targetDate = new Date('2026-04-02T00:00:00');
-    const totalAmount = 99800;
-    let currentMode = 'day'; // 'day' または 'hour'
-
-    function updateCounter() {
-        const now = new Date();
-        const diffMs = now - targetDate; // 経過ミリ秒
-
-        // 各種単位に変換
-        const diffHoursTotal = diffMs / (1000 * 60 * 60);
-        const diffDaysTotal = diffHoursTotal / 24;
-
-        // エレメントの取得
-        const mainCounter = document.getElementById('main-counter');
-        const subCounter = document.getElementById('sub-counter');
-        const costTitle = document.getElementById('cost-title');
-        const costValue = document.getElementById('cost-value');
-
-        if (currentMode === 'day') {
-            // 日モード：メインは小数点第2位まで表示
-            mainCounter.innerHTML = `${diffDaysTotal.toFixed(2)}<span class="unit">日</span>`;
-            subCounter.innerText = `（細かく言うと: ${Math.floor(diffHoursTotal).toLocaleString()}時間）`;
-            
-            costTitle.innerText = "99,800円の 1日あたり";
-            // 99800円 ÷ 経過日数
-            const costPerDay = diffDaysTotal > 0 ? (totalAmount / diffDaysTotal) : totalAmount;
-            costValue.innerText = `¥${costPerDay.toFixed(2)}`;
-        } else {
-            // 時間モード：メインは1時間単位（整数）または細かく小数点表示
-            mainCounter.innerHTML = `${diffHoursTotal.toFixed(1)}<span class="unit">時間</span>`;
-            subCounter.innerText = `（日数換算: ${diffDaysTotal.toFixed(1)}日）`;
-            
-            costTitle.innerText = "99,800円の 1時間あたり";
-            // 99800円 ÷ 経過時間
-            const costPerHour = diffHoursTotal > 0 ? (totalAmount / diffHoursTotal) : totalAmount;
-            costValue.innerText = `¥${costPerHour.toFixed(2)}`;
+    // 設定データ
+    const targets = [
+        {
+            date: new Date('2026-04-02T00:00:00'),
+            amount: 99800,
+            id: 1,
+            name: "99,800円"
+        },
+        {
+            date: new Date('2022-02-05T00:00:00'),
+            amount: 20000,
+            id: 2,
+            name: "20,000円"
         }
+    ];
+
+    let currentMode = 'day'; 
+
+    function updateCounters() {
+        const now = new Date();
+
+        targets.forEach(target => {
+            const diffMs = now - target.date; 
+            const diffHoursTotal = diffMs / (1000 * 60 * 60);
+            const diffDaysTotal = diffHoursTotal / 24;
+
+            const mainCounter = document.getElementById(`main-counter-${target.id}`);
+            const subCounter = document.getElementById(`sub-counter-${target.id}`);
+            const costTitle = document.getElementById(`cost-title-${target.id}`);
+            const costValue = document.getElementById(`cost-value-${target.id}`);
+
+            // 未来の日付、またはバグ防止
+            if (diffMs < 0) {
+                mainCounter.innerHTML = `---`;
+                costValue.innerText = `¥---`;
+                return;
+            }
+
+            if (currentMode === 'day') {
+                mainCounter.innerHTML = `${diffDaysTotal.toFixed(2)}<span class="unit">日</span>`;
+                subCounter.innerText = `（総時間: ${Math.floor(diffHoursTotal).toLocaleString()}時間）`;
+                costTitle.innerText = `${target.name}の 1日あたり`;
+                
+                const costPerDay = totalCostCalc(target.amount, diffDaysTotal);
+                costValue.innerText = `¥${costPerDay.toFixed(2)}`;
+            } else {
+                mainCounter.innerHTML = `${diffHoursTotal.toFixed(1)}<span class="unit">時間</span>`;
+                subCounter.innerText = `（総日数: ${diffDaysTotal.toFixed(1)}日）`;
+                costTitle.innerText = `${target.name}の 1時間あたり`;
+                
+                const costPerHour = totalCostCalc(target.amount, diffHoursTotal);
+                costValue.innerText = `¥${costPerHour.toFixed(4)}`; // 時間単価は細かくなるので小数点4位まで
+            }
+        });
+    }
+
+    function totalCostCalc(amount, divisor) {
+        return divisor > 0 ? (amount / divisor) : amount;
     }
 
     function setMode(mode) {
         currentMode = mode;
-        
-        // ボタンのアクティブ状態を切り替え
         document.getElementById('day-mode-btn').classList.toggle('active', mode === 'day');
         document.getElementById('hour-mode-btn').classList.toggle('active', mode === 'hour');
-        
-        // 即座に表示を更新
-        updateCounter();
+        updateCounters();
     }
 
-    // 1秒ごとに数値を更新（リアルタイム）
-    setInterval(updateCounter, 1000);
-    
-    // 初回起動時
-    updateCounter();
+    // 1秒ごとに更新
+    setInterval(updateCounters, 1000);
+    updateCounters();
 </script>
 
 </body>
