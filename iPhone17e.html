@@ -11,6 +11,8 @@
             --text-color: #333333;
             --primary-color: #007aff;
             --apple-green: #34c759;
+            --apple-orange: #ff9500;
+            --apple-purple: #af52de;
             --shadow: 0 10px 20px rgba(0,0,0,0.05), 0 2px 6px rgba(0,0,0,0.05);
         }
 
@@ -63,7 +65,7 @@
             flex-wrap: wrap;
             justify-content: center;
             width: 100%;
-            max-width: 950px;
+            max-width: 1200px;
         }
 
         .card {
@@ -72,15 +74,16 @@
             border-radius: 20px;
             box-shadow: var(--shadow);
             flex: 1;
-            min-width: 300px;
-            max-width: 450px;
+            min-width: 280px;
+            max-width: 380px;
             box-sizing: border-box;
             border-top: 5px solid var(--primary-color);
         }
 
-        .card.airpods {
-            border-top-color: var(--apple-green);
-        }
+        /* 各カードのアクセントカラー */
+        .card.airpods { border-top-color: var(--apple-green); }
+        .card.se2 { border-top-color: var(--apple-orange); }
+        .card.broken { border-top-color: var(--apple-purple); }
 
         h1 {
             font-size: 1.3rem;
@@ -100,7 +103,7 @@
         }
 
         .value {
-            font-size: 2.3rem;
+            font-size: 2.1rem;
             font-weight: 800;
             color: #111;
             line-height: 1.1;
@@ -134,7 +137,7 @@
         }
 
         .cost-amount {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 700;
             color: #ff3b30;
         }
@@ -142,14 +145,12 @@
 </head>
 <body>
 
-<!-- モード切り替え（全体共通） -->
 <div class="toggle-container">
     <button class="toggle-btn active" id="day-mode-btn" onclick="setMode('day')">日モード</button>
     <button class="toggle-btn" id="hour-mode-btn" onclick="setMode('hour')">時間モード</button>
 </div>
 
 <div class="dashboard">
-    <!-- 元のカード（99,800円） -->
     <div class="card">
         <h1>登録案件 A</h1>
         <div class="start-date">開始日: 2026年4月2日</div>
@@ -165,7 +166,21 @@
         </div>
     </div>
 
-    <!-- 追加：AirPods 2（20,000円） -->
+    <div class="card se2">
+        <h1>β27se2</h1>
+        <div class="start-date">開始日: 2020年12月15日</div>
+        
+        <div class="counter-display">
+            <div class="value" id="main-counter-3">0<span class="unit">日</span></div>
+            <div class="sub-value" id="sub-counter-3">（または 0時間）</div>
+        </div>
+        <hr>
+        <div class="cost-display">
+            <h2 id="cost-title-3">44,800円の換算</h2>
+            <div class="cost-amount" id="cost-value-3">¥0</div>
+        </div>
+    </div>
+
     <div class="card airpods">
         <h1>AirPods 2</h1>
         <div class="start-date">購入日: 2022年2月5日</div>
@@ -176,27 +191,34 @@
         </div>
         <hr>
         <div class="cost-display">
-            <h2 id="cost-title-2">20,000円の換算</h2>
+            <h2 id="cost-title-2">19,800円の換算</h2>
             <div class="cost-amount" id="cost-value-2">¥0</div>
+        </div>
+    </div>
+
+    <div class="card broken">
+        <h1>brokeniphone</h1>
+        <div class="start-date">開始日: 2022年3月3日</div>
+        
+        <div class="counter-display">
+            <div class="value" id="main-counter-4">0<span class="unit">日</span></div>
+            <div class="sub-value" id="sub-counter-4">（または 0時間）</div>
+        </div>
+        <hr>
+        <div class="cost-display">
+            <h2 id="cost-title-4">19,800円の換算</h2>
+            <div class="cost-amount" id="cost-value-4">¥0</div>
         </div>
     </div>
 </div>
 
 <script>
-    // 設定データ
+    // データ定義
     const targets = [
-        {
-            date: new Date('2026-04-02T00:00:00'),
-            amount: 99800,
-            id: 1,
-            name: "99,800円"
-        },
-        {
-            date: new Date('2022-02-05T00:00:00'),
-            amount: 20000,
-            id: 2,
-            name: "20,000円"
-        }
+        { id: 1, name: "99,800円", amount: 99800, date: new Date('2026-04-02T00:00:00') },
+        { id: 3, name: "44,800円", amount: 44800, date: new Date('2020-12-15T00:00:00') },
+        { id: 2, name: "19,800円", amount: 19800, date: new Date('2022-02-05T00:00:00') },
+        { id: 4, name: "19,800円", amount: 19800, date: new Date('2022-03-03T00:00:00') }
     ];
 
     let currentMode = 'day'; 
@@ -214,7 +236,6 @@
             const costTitle = document.getElementById(`cost-title-${target.id}`);
             const costValue = document.getElementById(`cost-value-${target.id}`);
 
-            // 未来の日付、またはバグ防止
             if (diffMs < 0) {
                 mainCounter.innerHTML = `---`;
                 costValue.innerText = `¥---`;
@@ -234,7 +255,7 @@
                 costTitle.innerText = `${target.name}の 1時間あたり`;
                 
                 const costPerHour = totalCostCalc(target.amount, diffHoursTotal);
-                costValue.innerText = `¥${costPerHour.toFixed(4)}`; // 時間単価は細かくなるので小数点4位まで
+                costValue.innerText = `¥${costPerHour.toFixed(4)}`; 
             }
         });
     }
@@ -250,7 +271,7 @@
         updateCounters();
     }
 
-    // 1秒ごとに更新
+    // 1秒ごとに自動更新
     setInterval(updateCounters, 1000);
     updateCounters();
 </script>
