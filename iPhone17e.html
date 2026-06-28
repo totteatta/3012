@@ -11,7 +11,6 @@
             --text-color: #333333;
             --primary-color: #007aff;
             --apple-green: #34c759;
-            --apple-orange: #ff9500;
             --apple-purple: #af52de;
             --shadow: 0 10px 20px rgba(0,0,0,0.05), 0 2px 6px rgba(0,0,0,0.05);
         }
@@ -82,8 +81,7 @@
 
         /* 各カードのアクセントカラー */
         .card.airpods { border-top-color: var(--apple-green); }
-        .card.se2 { border-top-color: var(--apple-orange); }
-        .card.broken { border-top-color: var(--apple-purple); }
+        .card.ipadmini { border-top-color: var(--apple-purple); }
 
         h1 {
             font-size: 1.3rem;
@@ -152,7 +150,7 @@
 
 <div class="dashboard">
     <div class="card">
-        <h1>登録案件 A</h1>
+        <h1>iPhone 17e</h1>
         <div class="start-date">開始日: 2026年4月2日</div>
         
         <div class="counter-display">
@@ -163,21 +161,6 @@
         <div class="cost-display">
             <h2 id="cost-title-1">99,800円の換算</h2>
             <div class="cost-amount" id="cost-value-1">¥0</div>
-        </div>
-    </div>
-
-    <div class="card se2">
-        <h1>β27se2</h1>
-        <div class="start-date">開始日: 2020年12月15日</div>
-        
-        <div class="counter-display">
-            <div class="value" id="main-counter-3">0<span class="unit">日</span></div>
-            <div class="sub-value" id="sub-counter-3">（または 0時間）</div>
-        </div>
-        <hr>
-        <div class="cost-display">
-            <h2 id="cost-title-3">44,800円の換算</h2>
-            <div class="cost-amount" id="cost-value-3">¥0</div>
         </div>
     </div>
 
@@ -196,30 +179,28 @@
         </div>
     </div>
 
-    <div class="card broken">
-        <h1>brokeniphone</h1>
-        <div class="start-date">開始日: 2022年3月3日</div>
+    <div class="card ipadmini">
+        <h1>iPad mini 6</h1>
+        <div class="start-date">購入日: 2022年7月14日</div>
         
         <div class="counter-display">
-            <div class="value" id="main-counter-4">0<span class="unit">日</span></div>
-            <div class="sub-value" id="sub-counter-4">（または 0時間）</div>
+            <div class="value" id="main-counter-5">0<span class="unit">日</span></div>
+            <div class="sub-value" id="sub-counter-5">（または 0時間）</div>
         </div>
         <hr>
         <div class="cost-display">
-            <h2 id="cost-title-4">19,800円の換算</h2>
-            <div class="cost-amount" id="cost-value-4">¥0</div>
+            <h2 id="cost-title-5">72,800円の換算</h2>
+            <div class="cost-amount" id="cost-value-5">¥0</div>
         </div>
     </div>
 </div>
 
 <script>
     // データ定義
-        // データ定義
     const targets = [
         { id: 1, name: "99,800円", amount: 99800, date: new Date('2026-04-02T00:00:00') },
-        { id: 3, name: "7,800円", amount: 7800, date: new Date('2020-12-15T00:00:00') },
         { id: 2, name: "19,800円", amount: 19800, date: new Date('2022-02-05T00:00:00') },
-        { id: 4, name: "9,800円", amount: 9800, date: new Date('2022-03-03T00:00:00') }
+        { id: 5, name: "72,800円", amount: 72800, date: new Date('2022-07-14T00:00:00') }
     ];
 
     let currentMode = 'day'; 
