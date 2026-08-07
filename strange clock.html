@@ -3,96 +3,122 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>100分制デジタル時計 (1日 = 14:40)</title>
+  <title>100分制時計 & 24時間時計</title>
   <style>
     body {
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
       background-color: #0f172a;
       color: #f8fafc;
       font-family: 'Segoe UI', system-ui, sans-serif;
     }
 
-    .clock-container {
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .clock-card {
       background: #1e293b;
-      padding: 40px 60px;
+      padding: 30px;
       border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       text-align: center;
       border: 1px solid #334155;
     }
 
     .clock-title {
-      font-size: 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
       color: #94a3b8;
-      margin-bottom: 15px;
-      letter-spacing: 1px;
+      margin-bottom: 12px;
+      letter-spacing: 1.5px;
     }
 
     .clock-display {
-      font-size: 5.5rem;
+      font-size: 4.5rem;
       font-weight: bold;
       font-family: 'Courier New', Courier, monospace;
-      letter-spacing: 4px;
-      color: #38bdf8;
-      text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+      letter-spacing: 3px;
     }
 
-    .real-time {
-      margin-top: 20px;
-      font-size: 0.9rem;
+    /* 上：100分時計 (シアン色) */
+    .decimal-clock {
+      color: #38bdf8;
+      text-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+    }
+
+    /* 下：24時間時計 (エメラルドグリーン色) */
+    .standard-clock {
+      color: #34d399;
+      text-shadow: 0 0 15px rgba(52, 211, 153, 0.3);
+    }
+
+    .clock-sub {
+      margin-top: 10px;
+      font-size: 0.8rem;
       color: #64748b;
     }
   </style>
 </head>
 <body>
 
-  <div class="clock-container">
-    <div class="clock-title">100-MINUTE DECIMAL CLOCK (1 DAY = 14:40)</div>
-    <div id="decimalClock" class="clock-display">00:00:00</div>
-    <div id="realClock" class="real-time">現実の時刻: --:--:--</div>
+  <div class="container">
+    <!-- 上：100分制時計 -->
+    <div class="clock-card">
+      <div class="clock-title">100-MINUTE DECIMAL CLOCK</div>
+      <div id="decimalClock" class="clock-display decimal-clock">00:00:00</div>
+      <div class="clock-sub">1時間 = 100分 / 1日 = 14時間40分</div>
+    </div>
+
+    <!-- 下：24時間時計 -->
+    <div class="clock-card">
+      <div class="clock-title">STANDARD 24-HOUR CLOCK</div>
+      <div id="standardClock" class="clock-display standard-clock">00:00:00</div>
+      <div class="clock-sub">1時間 = 60分 / 1日 = 24時間00分</div>
+    </div>
   </div>
 
   <script>
-    function updateClock() {
+    function updateClocks() {
       const now = new Date();
       
-      // 現実の「今日の経過秒数」を計算 (0 〜 86399秒)
       const realHours = now.getHours();
       const realMinutes = now.getMinutes();
       const realSeconds = now.getSeconds();
+
+      // --- 1. 100分制時計の計算 ---
       const totalRealSeconds = (realHours * 3600) + (realMinutes * 60) + realSeconds;
 
-      // 100分制の「1分」＝ 現実の60秒
-      // 100分制の「1時間」＝ 現実の6000秒 (100分)
       const decimalHours = Math.floor(totalRealSeconds / 6000);
       const remainingSecondsAfterHours = totalRealSeconds % 6000;
       
       const decimalMinutes = Math.floor(remainingSecondsAfterHours / 60);
       const decimalSeconds = remainingSecondsAfterHours % 60;
 
-      // 桁揃え (例: 5 -> "05")
-      const hStr = String(decimalHours).padStart(2, '0');
-      const mStr = String(decimalMinutes).padStart(2, '0');
-      const sStr = String(decimalSeconds).padStart(2, '0');
+      const dH = String(decimalHours).padStart(2, '0');
+      const dM = String(decimalMinutes).padStart(2, '0');
+      const dS = String(decimalSeconds).padStart(2, '0');
+      document.getElementById('decimalClock').textContent = `${dH}:${dM}:${dS}`;
 
-      // 100分時計の表示更新
-      document.getElementById('decimalClock').textContent = `${hStr}:${mStr}:${sStr}`;
-
-      // 参考用：現実の時刻表示
-      const rH = String(realHours).padStart(2, '0');
-      const rM = String(realMinutes).padStart(2, '0');
-      const rS = String(realSeconds).padStart(2, '0');
-      document.getElementById('realClock').textContent = `現実の時刻: ${rH}:${rM}:${rS}`;
+      // --- 2. 24時間時計の計算 ---
+      const sH = String(realHours).padStart(2, '0');
+      const sM = String(realMinutes).padStart(2, '0');
+      const sS = String(realSeconds).padStart(2, '0');
+      document.getElementById('standardClock').textContent = `${sH}:${sM}:${sS}`;
     }
 
-    // 1秒ごとに更新
-    setInterval(updateClock, 1000);
-    updateClock(); // 初回実行
+    // 1秒毎に両方の時計を同期更新
+    setInterval(updateClocks, 1000);
+    updateClocks();
   </script>
 
 </body>
