@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>100分制時計 & 24時間時計</title>
+  <title>100分制時計 & 1日48時間時計</title>
   <style>
     body {
       display: flex;
@@ -56,10 +56,10 @@
       text-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
     }
 
-    /* 下：24時間時計 (エメラルドグリーン色) */
-    .standard-clock {
-      color: #34d399;
-      text-shadow: 0 0 15px rgba(52, 211, 153, 0.3);
+    /* 下：1日48時間時計 (パープル色) */
+    .clock-48h {
+      color: #c084fc;
+      text-shadow: 0 0 15px rgba(192, 132, 252, 0.3);
     }
 
     .clock-sub {
@@ -79,11 +79,11 @@
       <div class="clock-sub">1時間 = 100分 / 1日 = 14時間40分</div>
     </div>
 
-    <!-- 下：24時間時計 -->
+    <!-- 下：1日48時間時計 -->
     <div class="clock-card">
-      <div class="clock-title">STANDARD 24-HOUR CLOCK</div>
-      <div id="standardClock" class="clock-display standard-clock">00:00:00</div>
-      <div class="clock-sub">1時間 = 60分 / 1日 = 24時間00分</div>
+      <div class="clock-title">48-HOUR DAY CLOCK (2x SPEED)</div>
+      <div id="clock48" class="clock-display clock-48h">00:00:00</div>
+      <div class="clock-sub">1時間 = 現実の30分 / 00:00:00 〜 47:59:59</div>
     </div>
   </div>
 
@@ -95,28 +95,35 @@
       const realMinutes = now.getMinutes();
       const realSeconds = now.getSeconds();
 
-      // --- 1. 100分制時計の計算 ---
+      // 今日の経過秒数 (0 〜 86399秒)
       const totalRealSeconds = (realHours * 3600) + (realMinutes * 60) + realSeconds;
 
+      // --- 1. 100分制時計の計算 ---
       const decimalHours = Math.floor(totalRealSeconds / 6000);
-      const remainingSecondsAfterHours = totalRealSeconds % 6000;
-      
-      const decimalMinutes = Math.floor(remainingSecondsAfterHours / 60);
-      const decimalSeconds = remainingSecondsAfterHours % 60;
+      const remainingDecSec = totalRealSeconds % 6000;
+      const decimalMinutes = Math.floor(remainingDecSec / 60);
+      const decimalSeconds = remainingDecSec % 60;
 
       const dH = String(decimalHours).padStart(2, '0');
       const dM = String(decimalMinutes).padStart(2, '0');
       const dS = String(decimalSeconds).padStart(2, '0');
       document.getElementById('decimalClock').textContent = `${dH}:${dM}:${dS}`;
 
-      // --- 2. 24時間時計の計算 ---
-      const sH = String(realHours).padStart(2, '0');
-      const sM = String(realMinutes).padStart(2, '0');
-      const sS = String(realSeconds).padStart(2, '0');
-      document.getElementById('standardClock').textContent = `${sH}:${sM}:${sS}`;
+      // --- 2. 1日48時間時計の計算 ---
+      // 現実の1秒で「48時間時計」の2秒が進む（2倍速）
+      const total48Seconds = totalRealSeconds * 2;
+
+      const hours48 = Math.floor(total48Seconds / 3600);             // 0 〜 47
+      const minutes48 = Math.floor((total48Seconds % 3600) / 60);    // 0 〜 59
+      const seconds48 = total48Seconds % 60;                         // 0 〜 59
+
+      const h48 = String(hours48).padStart(2, '0');
+      const m48 = String(minutes48).padStart(2, '0');
+      const s48 = String(seconds48).padStart(2, '0');
+      document.getElementById('clock48').textContent = `${h48}:${m48}:${s48}`;
     }
 
-    // 1秒毎に両方の時計を同期更新
+    // 1秒毎に更新
     setInterval(updateClocks, 1000);
     updateClocks();
   </script>
