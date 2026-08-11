@@ -37,43 +37,49 @@
     padding: 28px 16px 60px;
   }
 
-  header{
-    width:100%;
-    max-width: 760px;
-    margin-bottom: 22px;
-  }
+  header{ width:100%; max-width: 760px; margin-bottom: 22px; }
   .eyebrow{
-    display:flex;
-    align-items:center;
-    gap:10px;
+    display:flex; align-items:center; gap:10px;
     font-family: ui-monospace, "SF Mono", "Menlo", monospace;
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    color: var(--text-dim);
-    text-transform: uppercase;
+    font-size: 11px; letter-spacing: 0.18em;
+    color: var(--text-dim); text-transform: uppercase;
     margin-bottom: 10px;
   }
-  .eyebrow .dot{
-    width:6px; height:6px; border-radius:50%;
-    background: var(--grad);
-    flex: none;
-  }
-  h1{
-    font-size: 26px;
-    line-height: 1.3;
-    margin: 0 0 8px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
-  .sub{
-    color: var(--text-dim);
-    font-size: 13.5px;
-    line-height: 1.7;
-    margin: 0;
-    max-width: 62ch;
-  }
+  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background: var(--grad); flex:none; }
+  h1{ font-size: 26px; line-height: 1.3; margin: 0 0 8px; font-weight: 700; letter-spacing: -0.01em; }
+  .sub{ color: var(--text-dim); font-size: 13.5px; line-height: 1.7; margin: 0; max-width: 62ch; }
 
   main{ width:100%; max-width: 760px; }
+
+  /* Research card */
+  .research{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .research .cell{
+    background: var(--panel);
+    padding: 14px 14px 15px;
+  }
+  .research .k{
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 8px;
+  }
+  .research .v1, .research .v2{
+    font-size: 12.5px; line-height:1.6;
+  }
+  .research .v1{ color: var(--text); margin-bottom: 3px; }
+  .research .v2{ color: var(--text-dim); }
+  .research .arrow{ color: var(--c1); font-size:10px; margin: 0 4px; }
+  @media (max-width: 560px){
+    .research{ grid-template-columns: 1fr; }
+  }
 
   /* Upload dropzone */
   .dropzone{
@@ -85,20 +91,13 @@
     cursor: pointer;
     transition: border-color .15s ease, background .15s ease;
   }
-  .dropzone:hover, .dropzone.drag{
-    border-color: var(--c1);
-    background: var(--panel-2);
-  }
+  .dropzone:hover, .dropzone.drag{ border-color: var(--c1); background: var(--panel-2); }
   .dropzone .ring{
     width: 56px; height:56px; margin: 0 auto 18px;
-    border-radius: 50%;
-    border: 1.5px solid var(--line);
-    position: relative;
+    border-radius: 50%; border: 1.5px solid var(--line); position: relative;
   }
   .dropzone .ring::before, .dropzone .ring::after{
-    content:"";
-    position:absolute; inset: 12px;
-    border-radius:50%;
+    content:""; position:absolute; inset: 12px; border-radius:50%;
     border: 1.5px solid var(--text-faint);
   }
   .dropzone .ring::after{ inset: 22px; border-color: var(--c1); }
@@ -108,29 +107,18 @@
 
   /* Viewfinder */
   .viewfinder{
-    position:relative;
-    width:100%;
-    border-radius: 18px;
-    overflow:hidden;
+    position:relative; width:100%; border-radius: 18px; overflow:hidden;
     background: #000;
     box-shadow: 0 0 0 1px var(--line), 0 20px 60px -20px rgba(0,0,0,.6);
     touch-action: none;
     display:none;
   }
-  .viewfinder canvas{
-    display:block;
-    width:100%;
-    height:auto;
-  }
-  #beforeCanvas{
-    position:absolute; top:0; left:0;
-  }
+  .viewfinder canvas{ display:block; width:100%; height:auto; }
+  #beforeCanvas{ position:absolute; top:0; left:0; }
   .corner{
     position:absolute; width:18px; height:18px;
-    border-color: rgba(242,241,237,.55);
-    border-style: solid;
-    pointer-events:none;
-    z-index: 5;
+    border-color: rgba(242,241,237,.55); border-style: solid;
+    pointer-events:none; z-index: 5;
   }
   .corner.tl{ top:12px; left:12px; border-width: 1.5px 0 0 1.5px; }
   .corner.tr{ top:12px; right:12px; border-width: 1.5px 1.5px 0 0; }
@@ -141,124 +129,51 @@
     position:absolute; top:12px;
     font-family: ui-monospace, "SF Mono", monospace;
     font-size: 10px; letter-spacing: .12em;
-    padding: 4px 8px;
-    border-radius: 100px;
+    padding: 4px 8px; border-radius: 100px;
     background: rgba(11,12,14,.55);
     backdrop-filter: blur(6px);
     color: var(--text-dim);
-    z-index:4;
-    pointer-events:none;
+    z-index:4; pointer-events:none;
   }
   .tag.before{ left: 12px; }
   .tag.after{ right: 12px; }
 
-  .divider{
-    position:absolute; top:0; bottom:0;
-    width:2px;
-    background: rgba(242,241,237,.75);
-    z-index: 6;
-    pointer-events:none;
-  }
+  .divider{ position:absolute; top:0; bottom:0; width:2px; background: rgba(242,241,237,.75); z-index:6; pointer-events:none; }
   .handle{
-    position:absolute; top:50%; left:50%;
-    transform: translate(-50%,-50%);
-    width:34px; height:34px;
-    border-radius:50%;
-    background: var(--panel);
-    border: 1.5px solid rgba(242,241,237,.75);
+    position:absolute; top:50%; left:50%; transform: translate(-50%,-50%);
+    width:34px; height:34px; border-radius:50%;
+    background: var(--panel); border: 1.5px solid rgba(242,241,237,.75);
     display:flex; align-items:center; justify-content:center;
   }
-  .handle::before{
-    content:"";
-    width:12px; height:12px;
-    border-radius:50%;
-    border: 1.5px solid var(--c1);
-  }
+  .handle::before{ content:""; width:12px; height:12px; border-radius:50%; border: 1.5px solid var(--c1); }
 
-  /* Controls */
-  .panel{
+  .hint-row{
     display:none;
-    margin-top: 20px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 20px 20px 8px;
-  }
-  .ctrl{ margin-bottom: 20px; }
-  .ctrl .row{
-    display:flex; justify-content:space-between; align-items:baseline;
-    margin-bottom: 10px;
-  }
-  .ctrl label{ font-size: 13px; font-weight:600; }
-  .ctrl .val{
-    font-family: ui-monospace, "SF Mono", monospace;
-    font-size: 12px; color: var(--text-dim);
-  }
-  input[type=range]{
-    -webkit-appearance:none;
-    width:100%; height: 4px;
-    border-radius: 4px;
-    background: var(--line);
-    outline:none;
-  }
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;
-    width:16px; height:16px;
-    border-radius:50%;
-    background: var(--text);
-    border: 3px solid var(--bg);
-    box-shadow: 0 0 0 1.5px var(--c1);
-    cursor:pointer;
-    margin-top: -6px;
-  }
-  input[type=range]::-webkit-slider-runnable-track{
-    height:4px; border-radius:4px;
-    background: var(--line);
-  }
-  input[type=range]::-moz-range-thumb{
-    width:14px; height:14px; border-radius:50%;
-    background: var(--text); border: 3px solid var(--bg);
-    box-shadow: 0 0 0 1.5px var(--c1); cursor:pointer;
+    justify-content:center;
+    margin-top: 12px;
+    font-size: 11.5px;
+    color: var(--text-faint);
   }
 
-  .actions{
-    display:flex; gap:10px;
-    margin-top: 22px;
-    flex-wrap: wrap;
-  }
+  .actions{ display:none; gap:10px; margin-top: 18px; flex-wrap: wrap; }
   button{
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 12px 18px;
-    border-radius: 10px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    padding: 12px 18px; border-radius: 10px;
     border: 1px solid var(--line);
-    background: var(--panel-2);
-    color: var(--text);
+    background: var(--panel-2); color: var(--text);
     cursor:pointer;
     transition: border-color .15s ease, transform .05s ease;
   }
   button:hover{ border-color: var(--text-faint); }
   button:active{ transform: scale(.98); }
-  button.primary{
-    background: var(--grad);
-    color: #0b0c0e;
-    border: none;
-  }
-  button.ghost{
-    background: transparent;
-    color: var(--text-dim);
-  }
-  .actions{ margin-bottom: 4px; }
+  button.primary{ background: var(--grad); color: #0b0c0e; border: none; }
+  button.ghost{ background: transparent; color: var(--text-dim); }
 
   footer{
-    max-width: 760px;
-    width:100%;
-    margin-top: 26px;
-    font-size: 11.5px;
-    line-height:1.7;
-    color: var(--text-faint);
+    max-width: 760px; width:100%; margin-top: 26px;
+    font-size: 11.5px; line-height:1.7; color: var(--text-faint);
   }
+  footer b{ color: var(--text-dim); }
 
   @media (max-width: 520px){
     h1{ font-size: 21px; }
@@ -271,10 +186,28 @@
   <header>
     <div class="eyebrow"><span class="dot"></span>LENS SIMULATOR — for single-lens iPhone</div>
     <h1>超広角風レンズシミュレーター</h1>
-    <p class="sub">iPhone 17eのような広角レンズ1眼のiPhoneで撮った写真に、樽型ゆがみ・色収差・周辺減光を加えて超広角レンズ風の見た目に加工します。実際の画角(写る範囲)自体を広げることはできない点にご注意ください。</p>
+    <p class="sub">iPhone 17eのように広角カメラ1眼のみのiPhoneで撮った写真を、超広角カメラで撮った時の光学的な特徴に合わせて自動加工します。数値調整は不要で、写真を選ぶだけで実機の違いを再現したバージョンが仕上がります。</p>
   </header>
 
   <main>
+    <div class="research">
+      <div class="cell">
+        <div class="k">画角 / 焦点距離</div>
+        <div class="v1">広角 26mm相当<span class="arrow">→</span>超広角 13mm相当</div>
+        <div class="v2">画角は約120°まで拡大。写る範囲が広がる分、遠近感が誇張される</div>
+      </div>
+      <div class="cell">
+        <div class="k">パース（遠近感）</div>
+        <div class="v1">中心は自然・四隅ほど誇張</div>
+        <div class="v2">近い被写体は大きく、四隅の被写体は伸びて写る「超広角特有の歪み」</div>
+      </div>
+      <div class="cell">
+        <div class="k">レンズの明るさ</div>
+        <div class="v1">広角 F1.6前後<span class="arrow">→</span>超広角 F2.2前後</div>
+        <div class="v2">取り込む光が少なく、特に暗部でノイズが増えやすい</div>
+      </div>
+    </div>
+
     <div class="dropzone" id="dropzone">
       <div class="ring"></div>
       <div class="label">写真をドロップ、またはタップして選択</div>
@@ -285,37 +218,23 @@
     <div class="viewfinder" id="viewfinder">
       <canvas id="afterCanvas"></canvas>
       <canvas id="beforeCanvas"></canvas>
-      <div class="tag before">ORIGINAL</div>
-      <div class="tag after">SIMULATED</div>
+      <div class="tag before">通常レンズ</div>
+      <div class="tag after">超広角風</div>
       <div class="corner tl"></div><div class="corner tr"></div>
       <div class="corner bl"></div><div class="corner br"></div>
       <div class="divider" id="divider"><div class="handle"></div></div>
     </div>
+    <div class="hint-row" id="hintRow">中央のハンドルをドラッグすると加工前後を比較できます</div>
 
-    <div class="panel" id="panel">
-      <div class="ctrl">
-        <div class="row"><label>歪み量（樽型）</label><span class="val mono" id="vK">40</span></div>
-        <input type="range" id="sK" min="0" max="100" value="40">
-      </div>
-      <div class="ctrl">
-        <div class="row"><label>色収差</label><span class="val mono" id="vC">15</span></div>
-        <input type="range" id="sC" min="0" max="100" value="15">
-      </div>
-      <div class="ctrl">
-        <div class="row"><label>周辺減光</label><span class="val mono" id="vV">25</span></div>
-        <input type="range" id="sV" min="0" max="100" value="25">
-      </div>
-
-      <div class="actions">
-        <button class="primary" id="downloadBtn">画像を保存</button>
-        <button id="newBtn">別の写真を選ぶ</button>
-        <button class="ghost" id="resetBtn">初期値に戻す</button>
-      </div>
+    <div class="actions" id="actions">
+      <button class="primary" id="downloadBtn">画像を保存</button>
+      <button id="newBtn">別の写真を選ぶ</button>
     </div>
   </main>
 
   <footer>
-    ※ このツールは既存の写真に樽型ゆがみ・色収差・周辺減光といった超広角レンズ特有の光学効果を後付けで再現するものです。ハードウェアに超広角カメラがない場合、撮影時の実際の画角（写る範囲）そのものを広げることはできません。プレビュー中央のハンドルを左右にドラッグすると、加工前後を比較できます。
+    <b>反映している違い：</b> ①パース歪み（画角が広がることによる遠近感の誇張、四隅の伸び）　②周辺減光（フレーム端が少し暗くなる光学ビネット）　③軽い色収差（周辺部のわずかな色ズレ）　④粒状ノイズの増加（絞りが暗くなる分、光量不足を再現）。<br>
+    ※ あくまで見た目の再現です。実際の超広角カメラのように、より広い範囲そのものを写し込むことはできません（写る範囲を広げるには、超広角カメラでの撮影かパノラマ合成が必要です）。
   </footer>
 </div>
 
@@ -324,15 +243,24 @@
   const dropzone = document.getElementById('dropzone');
   const fileInput = document.getElementById('fileInput');
   const viewfinder = document.getElementById('viewfinder');
-  const panel = document.getElementById('panel');
+  const actions = document.getElementById('actions');
+  const hintRow = document.getElementById('hintRow');
   const afterCanvas = document.getElementById('afterCanvas');
   const beforeCanvas = document.getElementById('beforeCanvas');
   const divider = document.getElementById('divider');
-  const sK = document.getElementById('sK'), sC = document.getElementById('sC'), sV = document.getElementById('sV');
-  const vK = document.getElementById('vK'), vC = document.getElementById('vC'), vV = document.getElementById('vV');
 
   let img = null;
   let naturalW = 0, naturalH = 0;
+
+  // Fixed parameters, derived from researched optical differences between
+  // an iPhone wide (26mm-equiv, ~f/1.6) and ultra-wide (13mm-equiv, ~f/2.2) lens.
+  const PARAMS = {
+    k: 0.55,        // barrel / perspective distortion strength
+    chroma: 0.012,  // radial chromatic aberration
+    vignette: 0.22, // optical vignetting at frame edges
+    grain: 0.032,   // extra sensor noise from the narrower aperture
+    exposure: 0.975 // slightly less light gathered
+  };
 
   // ---------- WebGL setup ----------
   const VERT = `
@@ -351,11 +279,17 @@
     uniform float uK;
     uniform float uChroma;
     uniform float uVignette;
+    uniform float uGrain;
+    uniform float uExposure;
 
     vec2 warp(vec2 c, float scale, float mult){
       vec2 cs = c * scale * mult;
       cs.x /= uAspect;
       return cs * 0.5 + 0.5;
+    }
+
+    float hash(vec2 p){
+      return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
     }
 
     void main(){
@@ -372,9 +306,16 @@
       float R = texture2D(uTex, clamp(uvR, 0.0, 1.0)).r;
       float G = texture2D(uTex, clamp(uvG, 0.0, 1.0)).g;
       float B = texture2D(uTex, clamp(uvB, 0.0, 1.0)).b;
+      vec3 color = vec3(R, G, B);
 
       float vig = 1.0 - uVignette * smoothstep(0.35, 1.15, r);
-      gl_FragColor = vec4(vec3(R,G,B) * vig, 1.0);
+      color *= vig * uExposure;
+
+      float grainBoost = mix(0.6, 1.6, smoothstep(0.0, 1.1, r));
+      float n = (hash(uv * 1024.0) - 0.5) * uGrain * grainBoost;
+      color += vec3(n);
+
+      gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
     }
   `;
 
@@ -415,21 +356,25 @@
     const uK = gl.getUniformLocation(prog, 'uK');
     const uChroma = gl.getUniformLocation(prog, 'uChroma');
     const uVignette = gl.getUniformLocation(prog, 'uVignette');
+    const uGrain = gl.getUniformLocation(prog, 'uGrain');
+    const uExposure = gl.getUniformLocation(prog, 'uExposure');
 
     function setImage(image){
       gl.bindTexture(gl.TEXTURE_2D, tex);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
     }
 
-    function render(aspect, k, chroma, vignette){
+    function render(aspect){
       gl.viewport(0,0,canvas.width, canvas.height);
       gl.uniform1i(uTex, 0);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, tex);
       gl.uniform1f(uAspect, aspect);
-      gl.uniform1f(uK, k);
-      gl.uniform1f(uChroma, chroma);
-      gl.uniform1f(uVignette, vignette);
+      gl.uniform1f(uK, PARAMS.k);
+      gl.uniform1f(uChroma, PARAMS.chroma);
+      gl.uniform1f(uVignette, PARAMS.vignette);
+      gl.uniform1f(uGrain, PARAMS.grain);
+      gl.uniform1f(uExposure, PARAMS.exposure);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
@@ -439,19 +384,9 @@
   const preview = makeRenderer(afterCanvas);
   let fullRenderer = null; // created lazily at export time
 
-  function currentParams(){
-    return {
-      k: (parseInt(sK.value,10)/100) * 1.2,
-      chroma: (parseInt(sC.value,10)/100) * 0.05,
-      vignette: (parseInt(sV.value,10)/100) * 0.7
-    };
-  }
-
   function drawPreview(){
     if(!img) return;
-    const p = currentParams();
-    const aspect = naturalW / naturalH;
-    preview.render(aspect, p.k, p.chroma, p.vignette);
+    preview.render(naturalW / naturalH);
   }
 
   function drawBefore(){
@@ -475,7 +410,8 @@
 
       [afterCanvas, beforeCanvas].forEach(c => { c.width = dispW; c.height = dispH; });
       viewfinder.style.display = 'block';
-      panel.style.display = 'block';
+      actions.style.display = 'flex';
+      hintRow.style.display = 'flex';
       dropzone.style.display = 'none';
 
       preview.setImage(image);
@@ -497,23 +433,11 @@
   }));
   dropzone.addEventListener('drop', e => loadFile(e.dataTransfer.files[0]));
 
-  // ---------- Sliders ----------
-  function syncLabels(){
-    vK.textContent = sK.value;
-    vC.textContent = sC.value;
-    vV.textContent = sV.value;
-  }
-  [sK, sC, sV].forEach(s => s.addEventListener('input', () => { syncLabels(); drawPreview(); }));
-  syncLabels();
-
-  document.getElementById('resetBtn').addEventListener('click', () => {
-    sK.value = 40; sC.value = 15; sV.value = 25;
-    syncLabels(); drawPreview();
-  });
   document.getElementById('newBtn').addEventListener('click', () => {
     img = null;
     viewfinder.style.display = 'none';
-    panel.style.display = 'none';
+    actions.style.display = 'none';
+    hintRow.style.display = 'none';
     dropzone.style.display = 'block';
     fileInput.value = '';
   });
@@ -541,8 +465,7 @@
     exportCanvas.height = naturalH;
     if(!fullRenderer) fullRenderer = makeRenderer(exportCanvas);
     fullRenderer.setImage(img);
-    const p = currentParams();
-    fullRenderer.render(naturalW/naturalH, p.k, p.chroma, p.vignette);
+    fullRenderer.render(naturalW/naturalH);
 
     exportCanvas.toBlob(blob => {
       const a = document.createElement('a');
