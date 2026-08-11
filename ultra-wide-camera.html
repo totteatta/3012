@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wide Sim — 超広角風カメラ</title>
+<style>
+  :root{
+    --bg: #0b0c0e;
+    --panel: #16181c;
+    --panel-2: #1c1f24;
+    --line: #2a2d33;
+    --text: #f2f1ed;
+    --text-dim: #8a8d93;
+    --text-faint: #55585e;
+    --c1: #7de0d3;
+    --c2: #c792ea;
+    --c3: #f2a65a;
+    --grad: linear-gradient(90deg, var(--c1), var(--c2) 55%, var(--c3));
+    --danger: #e0857d;
+    font-size: 16px;
+  }
+  *{ box-sizing: border-box; }
+  html,body{
+    margin:0; padding:0; height:100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app{
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 28px 16px 60px;
+  }
+
+  header{ width:100%; max-width: 760px; margin-bottom: 20px; }
+  .eyebrow{
+    display:flex; align-items:center; gap:10px;
+    font-family: ui-monospace, "SF Mono", "Menlo", monospace;
+    font-size: 11px; letter-spacing: 0.18em;
+    color: var(--text-dim); text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background: var(--grad); flex:none; }
+  h1{ font-size: 26px; line-height: 1.3; margin: 0 0 8px; font-weight: 700; letter-spacing: -0.01em; }
+  .sub{ color: var(--text-dim); font-size: 13.5px; line-height: 1.7; margin: 0; max-width: 62ch; }
+
+  main{ width:100%; max-width: 760px; }
+
+  .research{
+    display:grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; margin-bottom: 18px;
+  }
+  .research .cell{ background: var(--panel); padding: 14px 14px 15px; }
+  .research .k{
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 8px;
+  }
+  .research .v1{ font-size: 12.5px; line-height:1.6; color: var(--text); margin-bottom: 3px; }
+  .research .v2{ font-size: 12.5px; line-height:1.6; color: var(--text-dim); }
+  .research .arrow{ color: var(--c1); font-size:10px; margin: 0 4px; }
+  @media (max-width: 560px){ .research{ grid-template-columns: 1fr; } }
+
+  /* Start card */
+  .start{
+    border: 1px dashed var(--line);
+    border-radius: 18px;
+    background: var(--panel);
+    padding: 56px 24px;
+    text-align: center;
+  }
+  .start .ring{
+    width: 56px; height:56px; margin: 0 auto 18px;
+    border-radius: 50%; border: 1.5px solid var(--line); position: relative;
+  }
+  .start .ring::before, .start .ring::after{
+    content:""; position:absolute; inset: 12px; border-radius:50%;
+    border: 1.5px solid var(--text-faint);
+  }
+  .start .ring::after{ inset: 22px; border-color: var(--c1); }
+  .start .label{ font-size: 14.5px; font-weight:600; margin-bottom:6px; }
+  .start .hint{ font-size: 12.5px; color: var(--text-faint); margin-bottom: 22px; }
+  .start .err{
+    display:none;
+    font-size: 12.5px; color: var(--danger);
+    margin-top: 14px; line-height:1.6;
+  }
+
+  /* Viewfinder */
+  .viewfinder{
+    position:relative; width:100%; aspect-ratio: 4/3; border-radius: 18px; overflow:hidden;
+    background: #000;
+    box-shadow: 0 0 0 1px var(--line), 0 20px 60px -20px rgba(0,0,0,.6);
+    touch-action: none;
+    display:none;
+  }
+  .viewfinder canvas, .viewfinder video{
+    position:absolute; inset:0; width:100%; height:100%; object-fit: cover;
+  }
+  video{ display:none; }
+  #beforeCanvas{ clip-path: inset(0 100% 0 0); }
+
+  .corner{
+    position:absolute; width:18px; height:18px;
+    border-color: rgba(242,241,237,.55); border-style: solid;
+    pointer-events:none; z-index: 5;
+  }
+  .corner.tl{ top:12px; left:12px; border-width: 1.5px 0 0 1.5px; }
+  .corner.tr{ top:12px; right:12px; border-width: 1.5px 1.5px 0 0; }
+  .corner.bl{ bottom:12px; left:12px; border-width: 0 0 1.5px 1.5px; }
+  .corner.br{ bottom:12px; right:12px; border-width: 0 1.5px 1.5px 0; }
+
+  .tag{
+    position:absolute; top:12px;
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 10px; letter-spacing: .12em;
+    padding: 4px 8px; border-radius: 100px;
+    background: rgba(11,12,14,.55);
+    backdrop-filter: blur(6px);
+    color: var(--text-dim);
+    z-index:4; pointer-events:none;
+  }
+  .tag.before{ left: 12px; }
+  .tag.after{ right: 12px; }
+  .tag.rec{
+    left: 50%; transform: translateX(-50%);
+    display:flex; align-items:center; gap:6px;
+  }
+  .tag.rec .r{ width:6px; height:6px; border-radius:50%; background: var(--danger); }
+
+  .divider{ position:absolute; top:0; bottom:0; width:2px; background: rgba(242,241,237,.75); z-index:6; pointer-events:none; display:none; }
+  .handle{
+    position:absolute; top:50%; left:50%; transform: translate(-50%,-50%);
+    width:34px; height:34px; border-radius:50%;
+    background: var(--panel); border: 1.5px solid rgba(242,241,237,.75);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .handle::before{ content:""; width:12px; height:12px; border-radius:50%; border: 1.5px solid var(--c1); }
+
+  .hint-row{
+    display:none; justify-content:center; margin-top: 12px;
+    font-size: 11.5px; color: var(--text-faint);
+  }
+
+  .actions{ display:none; gap:10px; margin-top: 18px; flex-wrap: wrap; align-items:center; justify-content:center; width:100%; }
+  button{
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    padding: 12px 18px; border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--panel-2); color: var(--text);
+    cursor:pointer;
+    transition: border-color .15s ease, transform .05s ease;
+  }
+  button:hover{ border-color: var(--text-faint); }
+  button:active{ transform: scale(.98); }
+  button.primary{ background: var(--grad); color: #0b0c0e; border: none; }
+  button.ghost{ background: transparent; color: var(--text-dim); }
+
+  .shutter{
+    width:60px; height:60px; border-radius:50%;
+    padding:0;
+    background: var(--text);
+    border: 3px solid var(--panel-2);
+    box-shadow: 0 0 0 2px var(--text);
+    position:relative;
+  }
+  .shutter:active{ transform: scale(.94); }
+
+  footer{
+    max-width: 760px; width:100%; margin-top: 26px;
+    font-size: 11.5px; line-height:1.7; color: var(--text-faint);
+  }
+  footer b{ color: var(--text-dim); }
+
+  @media (max-width: 520px){
+    h1{ font-size: 21px; }
+    .start{ padding: 42px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="eyebrow"><span class="dot"></span>LENS SIMULATOR — for single-lens iPhone</div>
+    <h1>超広角風カメラ</h1>
+    <p class="sub">iPhone 17eのように広角カメラ1眼のみの端末で、超広角カメラの光学的な特徴に近づけてその場で撮影します。写る範囲（画角）自体を広げることはできませんが、超広角レンズの見た目の特徴はできる限り再現します。</p>
+  </header>
+
+  <main>
+    <div class="research">
+      <div class="cell">
+        <div class="k">画角 / 焦点距離</div>
+        <div class="v1">広角 26mm相当<span class="arrow">→</span>超広角 13mm相当</div>
+        <div class="v2">画角は約120°まで拡大。写る範囲が広がる分、遠近感が誇張される</div>
+      </div>
+      <div class="cell">
+        <div class="k">パース（遠近感）</div>
+        <div class="v1">中心は自然・四隅ほど誇張</div>
+        <div class="v2">近い被写体は大きく、四隅の被写体は伸びて写る「超広角特有の歪み」</div>
+      </div>
+      <div class="cell">
+        <div class="k">レンズの明るさ</div>
+        <div class="v1">広角 F1.6前後<span class="arrow">→</span>超広角 F2.2前後</div>
+        <div class="v2">取り込む光が少なく、特に暗部でノイズが増えやすい</div>
+      </div>
+    </div>
+
+    <div class="start" id="start">
+      <div class="ring"></div>
+      <div class="label">カメラを起動して撮影</div>
+      <div class="hint">このページ内だけで処理します。写真の保存や送信は行いません</div>
+      <button class="primary" id="startBtn">カメラを起動</button>
+      <div class="err" id="err"></div>
+    </div>
+
+    <div class="viewfinder" id="viewfinder">
+      <video id="video" playsinline muted></video>
+      <canvas id="afterCanvas"></canvas>
+      <canvas id="beforeCanvas"></canvas>
+      <div class="tag before" id="tagBefore" style="display:none;">通常レンズ</div>
+      <div class="tag after" id="tagAfter" style="display:none;">超広角風</div>
+      <div class="tag rec" id="tagRec"><span class="r"></span>LIVE</div>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <div class="divider" id="divider"><div class="handle"></div></div>
+    </div>
+    <div class="hint-row" id="hintRow">中央のハンドルをドラッグすると撮影前後を比較できます</div>
+
+    <div class="actions" id="liveActions">
+      <button class="shutter" id="shutterBtn" aria-label="撮影"></button>
+    </div>
+    <div class="actions" id="capturedActions">
+      <button class="primary" id="downloadBtn">画像を保存</button>
+      <button id="retakeBtn">撮り直す</button>
+    </div>
+  </main>
+
+  <footer>
+    <b>反映している違い：</b> ①パース歪み（画角が広がることによる遠近感の誇張、四隅の伸び）　②周辺減光（フレーム端が少し暗くなる光学ビネット）　③軽い色収差（周辺部のわずかな色ズレ）　④粒状ノイズの増加（絞りが暗くなる分、光量不足を再現）。<br>
+    ※ このサイトが加工できるのは「見た目」だけです。ハードウェアに超広角カメラがない以上、実際に写る範囲（画角）そのものを広げることはできません。<br>
+    ※ カメラの起動にはブラウザの許可と、https（または localhost）での閲覧が必要です。
+  </footer>
+</div>
+
+<script>
+(function(){
+  const startCard = document.getElementById('start');
+  const startBtn = document.getElementById('startBtn');
+  const errBox = document.getElementById('err');
+  const viewfinder = document.getElementById('viewfinder');
+  const video = document.getElementById('video');
+  const afterCanvas = document.getElementById('afterCanvas');
+  const beforeCanvas = document.getElementById('beforeCanvas');
+  const divider = document.getElementById('divider');
+  const hintRow = document.getElementById('hintRow');
+  const tagBefore = document.getElementById('tagBefore');
+  const tagAfter = document.getElementById('tagAfter');
+  const tagRec = document.getElementById('tagRec');
+  const liveActions = document.getElementById('liveActions');
+  const capturedActions = document.getElementById('capturedActions');
+  const shutterBtn = document.getElementById('shutterBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const retakeBtn = document.getElementById('retakeBtn');
+
+  let stream = null;
+  let rafId = null;
+  let captured = false;
+  let capturedBlobUrl = null;
+
+  // Fixed parameters, derived from researched optical differences between
+  // an iPhone wide (26mm-equiv, ~f/1.6) and ultra-wide (13mm-equiv, ~f/2.2) lens.
+  const PARAMS = {
+    k: 0.55,
+    chroma: 0.012,
+    vignette: 0.22,
+    grain: 0.032,
+    exposure: 0.975
+  };
+
+  // ---------- WebGL setup ----------
+  const VERT = `
+    attribute vec2 aPos;
+    varying vec2 vUv;
+    void main(){
+      vUv = aPos * 0.5 + 0.5;
+      gl_Position = vec4(aPos, 0.0, 1.0);
+    }
+  `;
+  const FRAG = `
+    precision highp float;
+    varying vec2 vUv;
+    uniform sampler2D uTex;
+    uniform float uAspect;
+    uniform float uK;
+    uniform float uChroma;
+    uniform float uVignette;
+    uniform float uGrain;
+    uniform float uExposure;
+    uniform float uSeed;
+
+    vec2 warp(vec2 c, float scale, float mult){
+      vec2 cs = c * scale * mult;
+      cs.x /= uAspect;
+      return cs * 0.5 + 0.5;
+    }
+
+    float hash(vec2 p){
+      return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+    }
+
+    void main(){
+      vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
+      vec2 c = (uv - 0.5) * 2.0;
+      c.x *= uAspect;
+      float r = length(c);
+      float scale = 1.0 / (1.0 + uK * r * r);
+
+      vec2 uvR = warp(c, scale, 1.0 + uChroma);
+      vec2 uvG = warp(c, scale, 1.0);
+      vec2 uvB = warp(c, scale, 1.0 - uChroma);
+
+      float R = texture2D(uTex, clamp(uvR, 0.0, 1.0)).r;
+      float G = texture2D(uTex, clamp(uvG, 0.0, 1.0)).g;
+      float B = texture2D(uTex, clamp(uvB, 0.0, 1.0)).b;
+      vec3 color = vec3(R, G, B);
+
+      float vig = 1.0 - uVignette * smoothstep(0.35, 1.15, r);
+      color *= vig * uExposure;
+
+      float grainBoost = mix(0.6, 1.6, smoothstep(0.0, 1.1, r));
+      float n = (hash(uv * 1024.0 + uSeed) - 0.5) * uGrain * grainBoost;
+      color += vec3(n);
+
+      gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
+    }
+  `;
+
+  function compile(gl, type, src){
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
+      console.error(gl.getShaderInfoLog(s));
+    }
+    return s;
+  }
+
+  function makeRenderer(canvas){
+    const gl = canvas.getContext('webgl', {preserveDrawingBuffer:true});
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
+    gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(prog, 'aPos');
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+    const loc = {
+      uTex: gl.getUniformLocation(prog, 'uTex'),
+      uAspect: gl.getUniformLocation(prog, 'uAspect'),
+      uK: gl.getUniformLocation(prog, 'uK'),
+      uChroma: gl.getUniformLocation(prog, 'uChroma'),
+      uVignette: gl.getUniformLocation(prog, 'uVignette'),
+      uGrain: gl.getUniformLocation(prog, 'uGrain'),
+      uExposure: gl.getUniformLocation(prog, 'uExposure'),
+      uSeed: gl.getUniformLocation(prog, 'uSeed')
+    };
+
+    function setSource(source){
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+    }
+
+    function render(aspect, seed){
+      gl.viewport(0,0,canvas.width, canvas.height);
+      gl.uniform1i(loc.uTex, 0);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.uniform1f(loc.uAspect, aspect);
+      gl.uniform1f(loc.uK, PARAMS.k);
+      gl.uniform1f(loc.uChroma, PARAMS.chroma);
+      gl.uniform1f(loc.uVignette, PARAMS.vignette);
+      gl.uniform1f(loc.uGrain, PARAMS.grain);
+      gl.uniform1f(loc.uExposure, PARAMS.exposure);
+      gl.uniform1f(loc.uSeed, seed || 0.0);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+
+    return { setSource, render };
+  }
+
+  const liveRenderer = makeRenderer(afterCanvas);
+  let fullRenderer = null;
+
+  // ---------- Camera ----------
+  async function startCamera(){
+    errBox.style.display = 'none';
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1440 } },
+        audio: false
+      });
+      video.srcObject = stream;
+      await video.play();
+
+      startCard.style.display = 'none';
+      viewfinder.style.display = 'block';
+      liveActions.style.display = 'flex';
+
+      resizeCanvases();
+      loop();
+    }catch(e){
+      let msg = 'カメラを起動できませんでした。';
+      if(location.protocol !== 'https:' && location.hostname !== 'localhost'){
+        msg += ' このページを https（または localhost）で開いているかご確認ください。';
+      } else if(e && e.name === 'NotAllowedError'){
+        msg += ' ブラウザのカメラ許可設定をご確認ください。';
+      } else if(e && e.name === 'NotFoundError'){
+        msg += ' 利用可能なカメラが見つかりませんでした。';
+      }
+      errBox.textContent = msg;
+      errBox.style.display = 'block';
+    }
+  }
+
+  function resizeCanvases(){
+    const w = viewfinder.clientWidth;
+    const h = viewfinder.clientHeight;
+    [afterCanvas, beforeCanvas].forEach(c => { c.width = w; c.height = h; });
+  }
+  window.addEventListener('resize', () => { if(!captured) resizeCanvases(); });
+
+  function loop(){
+    if(video.readyState >= 2){
+      liveRenderer.setSource(video);
+      liveRenderer.render(afterCanvas.width / afterCanvas.height, performance.now() * 0.0003);
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+
+  // ---------- Capture ----------
+  shutterBtn.addEventListener('click', () => {
+    if(!stream) return;
+    captured = true;
+    cancelAnimationFrame(rafId);
+
+    const vw = video.videoWidth, vh = video.videoHeight;
+    afterCanvas.width = vw; afterCanvas.height = vh;
+    beforeCanvas.width = vw; beforeCanvas.height = vh;
+
+    liveRenderer.setSource(video);
+    liveRenderer.render(vw / vh, 0.0);
+
+    const bctx = beforeCanvas.getContext('2d');
+    bctx.drawImage(video, 0, 0, vw, vh);
+
+    tagBefore.style.display = 'block';
+    tagAfter.style.display = 'block';
+    tagRec.style.display = 'none';
+    divider.style.display = 'block';
+    hintRow.style.display = 'flex';
+    setDivider(50);
+
+    liveActions.style.display = 'none';
+    capturedActions.style.display = 'flex';
+
+    afterCanvas.toBlob(blob => {
+      if(capturedBlobUrl) URL.revokeObjectURL(capturedBlobUrl);
+      capturedBlobUrl = URL.createObjectURL(blob);
+    }, 'image/jpeg', 0.95);
+  });
+
+  retakeBtn.addEventListener('click', () => {
+    captured = false;
+    tagBefore.style.display = 'none';
+    tagAfter.style.display = 'none';
+    tagRec.style.display = 'flex';
+    divider.style.display = 'none';
+    hintRow.style.display = 'none';
+    beforeCanvas.getContext('2d').clearRect(0,0,beforeCanvas.width, beforeCanvas.height);
+    liveActions.style.display = 'flex';
+    capturedActions.style.display = 'none';
+    resizeCanvases();
+    loop();
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    if(!capturedBlobUrl) return;
+    const a = document.createElement('a');
+    a.href = capturedBlobUrl;
+    a.download = 'ultra-wide-simulated.jpg';
+    a.click();
+  });
+
+  // ---------- Split divider drag ----------
+  function setDivider(pct){
+    pct = Math.max(0, Math.min(100, pct));
+    beforeCanvas.style.clipPath = `inset(0 ${100-pct}% 0 0)`;
+    divider.style.left = pct + '%';
+  }
+  let dragging = false;
+  function pointerToPct(clientX){
+    const rect = viewfinder.getBoundingClientRect();
+    return ((clientX - rect.left) / rect.width) * 100;
+  }
+  viewfinder.addEventListener('pointerdown', e => { if(captured){ dragging = true; setDivider(pointerToPct(e.clientX)); } });
+  window.addEventListener('pointermove', e => { if(dragging) setDivider(pointerToPct(e.clientX)); });
+  window.addEventListener('pointerup', () => dragging = false);
+
+  startBtn.addEventListener('click', startCamera);
+})();
+</script>
+</body>
+</html>
