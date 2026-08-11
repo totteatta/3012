@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wide Sim — 超広角風レンズシミュレーター</title>
+<style>
+  :root{
+    --bg: #0b0c0e;
+    --panel: #16181c;
+    --panel-2: #1c1f24;
+    --line: #2a2d33;
+    --text: #f2f1ed;
+    --text-dim: #8a8d93;
+    --text-faint: #55585e;
+    --c1: #7de0d3;
+    --c2: #c792ea;
+    --c3: #f2a65a;
+    --grad: linear-gradient(90deg, var(--c1), var(--c2) 55%, var(--c3));
+    font-size: 16px;
+  }
+  *{ box-sizing: border-box; }
+  html,body{
+    margin:0; padding:0; height:100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono{ font-family: ui-monospace, "SF Mono", "Menlo", "Consolas", monospace; }
+
+  .app{
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 28px 16px 60px;
+  }
+
+  header{
+    width:100%;
+    max-width: 760px;
+    margin-bottom: 22px;
+  }
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family: ui-monospace, "SF Mono", "Menlo", monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .eyebrow .dot{
+    width:6px; height:6px; border-radius:50%;
+    background: var(--grad);
+    flex: none;
+  }
+  h1{
+    font-size: 26px;
+    line-height: 1.3;
+    margin: 0 0 8px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .sub{
+    color: var(--text-dim);
+    font-size: 13.5px;
+    line-height: 1.7;
+    margin: 0;
+    max-width: 62ch;
+  }
+
+  main{ width:100%; max-width: 760px; }
+
+  /* Upload dropzone */
+  .dropzone{
+    border: 1px dashed var(--line);
+    border-radius: 18px;
+    background: var(--panel);
+    padding: 56px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .dropzone:hover, .dropzone.drag{
+    border-color: var(--c1);
+    background: var(--panel-2);
+  }
+  .dropzone .ring{
+    width: 56px; height:56px; margin: 0 auto 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    position: relative;
+  }
+  .dropzone .ring::before, .dropzone .ring::after{
+    content:"";
+    position:absolute; inset: 12px;
+    border-radius:50%;
+    border: 1.5px solid var(--text-faint);
+  }
+  .dropzone .ring::after{ inset: 22px; border-color: var(--c1); }
+  .dropzone .label{ font-size: 14.5px; font-weight:600; margin-bottom:6px; }
+  .dropzone .hint{ font-size: 12.5px; color: var(--text-faint); }
+  input[type=file]{ display:none; }
+
+  /* Viewfinder */
+  .viewfinder{
+    position:relative;
+    width:100%;
+    border-radius: 18px;
+    overflow:hidden;
+    background: #000;
+    box-shadow: 0 0 0 1px var(--line), 0 20px 60px -20px rgba(0,0,0,.6);
+    touch-action: none;
+    display:none;
+  }
+  .viewfinder canvas{
+    display:block;
+    width:100%;
+    height:auto;
+  }
+  #beforeCanvas{
+    position:absolute; top:0; left:0;
+  }
+  .corner{
+    position:absolute; width:18px; height:18px;
+    border-color: rgba(242,241,237,.55);
+    border-style: solid;
+    pointer-events:none;
+    z-index: 5;
+  }
+  .corner.tl{ top:12px; left:12px; border-width: 1.5px 0 0 1.5px; }
+  .corner.tr{ top:12px; right:12px; border-width: 1.5px 1.5px 0 0; }
+  .corner.bl{ bottom:12px; left:12px; border-width: 0 0 1.5px 1.5px; }
+  .corner.br{ bottom:12px; right:12px; border-width: 0 1.5px 1.5px 0; }
+
+  .tag{
+    position:absolute; top:12px;
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 10px; letter-spacing: .12em;
+    padding: 4px 8px;
+    border-radius: 100px;
+    background: rgba(11,12,14,.55);
+    backdrop-filter: blur(6px);
+    color: var(--text-dim);
+    z-index:4;
+    pointer-events:none;
+  }
+  .tag.before{ left: 12px; }
+  .tag.after{ right: 12px; }
+
+  .divider{
+    position:absolute; top:0; bottom:0;
+    width:2px;
+    background: rgba(242,241,237,.75);
+    z-index: 6;
+    pointer-events:none;
+  }
+  .handle{
+    position:absolute; top:50%; left:50%;
+    transform: translate(-50%,-50%);
+    width:34px; height:34px;
+    border-radius:50%;
+    background: var(--panel);
+    border: 1.5px solid rgba(242,241,237,.75);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .handle::before{
+    content:"";
+    width:12px; height:12px;
+    border-radius:50%;
+    border: 1.5px solid var(--c1);
+  }
+
+  /* Controls */
+  .panel{
+    display:none;
+    margin-top: 20px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px 20px 8px;
+  }
+  .ctrl{ margin-bottom: 20px; }
+  .ctrl .row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom: 10px;
+  }
+  .ctrl label{ font-size: 13px; font-weight:600; }
+  .ctrl .val{
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 12px; color: var(--text-dim);
+  }
+  input[type=range]{
+    -webkit-appearance:none;
+    width:100%; height: 4px;
+    border-radius: 4px;
+    background: var(--line);
+    outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:16px; height:16px;
+    border-radius:50%;
+    background: var(--text);
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 1.5px var(--c1);
+    cursor:pointer;
+    margin-top: -6px;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:4px; border-radius:4px;
+    background: var(--line);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px; height:14px; border-radius:50%;
+    background: var(--text); border: 3px solid var(--bg);
+    box-shadow: 0 0 0 1.5px var(--c1); cursor:pointer;
+  }
+
+  .actions{
+    display:flex; gap:10px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+  button{
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text);
+    cursor:pointer;
+    transition: border-color .15s ease, transform .05s ease;
+  }
+  button:hover{ border-color: var(--text-faint); }
+  button:active{ transform: scale(.98); }
+  button.primary{
+    background: var(--grad);
+    color: #0b0c0e;
+    border: none;
+  }
+  button.ghost{
+    background: transparent;
+    color: var(--text-dim);
+  }
+  .actions{ margin-bottom: 4px; }
+
+  footer{
+    max-width: 760px;
+    width:100%;
+    margin-top: 26px;
+    font-size: 11.5px;
+    line-height:1.7;
+    color: var(--text-faint);
+  }
+
+  @media (max-width: 520px){
+    h1{ font-size: 21px; }
+    .dropzone{ padding: 42px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="eyebrow"><span class="dot"></span>LENS SIMULATOR — for single-lens iPhone</div>
+    <h1>超広角風レンズシミュレーター</h1>
+    <p class="sub">iPhone 17eのような広角レンズ1眼のiPhoneで撮った写真に、樽型ゆがみ・色収差・周辺減光を加えて超広角レンズ風の見た目に加工します。実際の画角(写る範囲)自体を広げることはできない点にご注意ください。</p>
+  </header>
+
+  <main>
+    <div class="dropzone" id="dropzone">
+      <div class="ring"></div>
+      <div class="label">写真をドロップ、またはタップして選択</div>
+      <div class="hint">JPEG / PNG ・ このブラウザ内だけで処理します</div>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div class="viewfinder" id="viewfinder">
+      <canvas id="afterCanvas"></canvas>
+      <canvas id="beforeCanvas"></canvas>
+      <div class="tag before">ORIGINAL</div>
+      <div class="tag after">SIMULATED</div>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <div class="divider" id="divider"><div class="handle"></div></div>
+    </div>
+
+    <div class="panel" id="panel">
+      <div class="ctrl">
+        <div class="row"><label>歪み量（樽型）</label><span class="val mono" id="vK">40</span></div>
+        <input type="range" id="sK" min="0" max="100" value="40">
+      </div>
+      <div class="ctrl">
+        <div class="row"><label>色収差</label><span class="val mono" id="vC">15</span></div>
+        <input type="range" id="sC" min="0" max="100" value="15">
+      </div>
+      <div class="ctrl">
+        <div class="row"><label>周辺減光</label><span class="val mono" id="vV">25</span></div>
+        <input type="range" id="sV" min="0" max="100" value="25">
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="downloadBtn">画像を保存</button>
+        <button id="newBtn">別の写真を選ぶ</button>
+        <button class="ghost" id="resetBtn">初期値に戻す</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    ※ このツールは既存の写真に樽型ゆがみ・色収差・周辺減光といった超広角レンズ特有の光学効果を後付けで再現するものです。ハードウェアに超広角カメラがない場合、撮影時の実際の画角（写る範囲）そのものを広げることはできません。プレビュー中央のハンドルを左右にドラッグすると、加工前後を比較できます。
+  </footer>
+</div>
+
+<script>
+(function(){
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const viewfinder = document.getElementById('viewfinder');
+  const panel = document.getElementById('panel');
+  const afterCanvas = document.getElementById('afterCanvas');
+  const beforeCanvas = document.getElementById('beforeCanvas');
+  const divider = document.getElementById('divider');
+  const sK = document.getElementById('sK'), sC = document.getElementById('sC'), sV = document.getElementById('sV');
+  const vK = document.getElementById('vK'), vC = document.getElementById('vC'), vV = document.getElementById('vV');
+
+  let img = null;
+  let naturalW = 0, naturalH = 0;
+
+  // ---------- WebGL setup ----------
+  const VERT = `
+    attribute vec2 aPos;
+    varying vec2 vUv;
+    void main(){
+      vUv = aPos * 0.5 + 0.5;
+      gl_Position = vec4(aPos, 0.0, 1.0);
+    }
+  `;
+  const FRAG = `
+    precision highp float;
+    varying vec2 vUv;
+    uniform sampler2D uTex;
+    uniform float uAspect;
+    uniform float uK;
+    uniform float uChroma;
+    uniform float uVignette;
+
+    vec2 warp(vec2 c, float scale, float mult){
+      vec2 cs = c * scale * mult;
+      cs.x /= uAspect;
+      return cs * 0.5 + 0.5;
+    }
+
+    void main(){
+      vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
+      vec2 c = (uv - 0.5) * 2.0;
+      c.x *= uAspect;
+      float r = length(c);
+      float scale = 1.0 / (1.0 + uK * r * r);
+
+      vec2 uvR = warp(c, scale, 1.0 + uChroma);
+      vec2 uvG = warp(c, scale, 1.0);
+      vec2 uvB = warp(c, scale, 1.0 - uChroma);
+
+      float R = texture2D(uTex, clamp(uvR, 0.0, 1.0)).r;
+      float G = texture2D(uTex, clamp(uvG, 0.0, 1.0)).g;
+      float B = texture2D(uTex, clamp(uvB, 0.0, 1.0)).b;
+
+      float vig = 1.0 - uVignette * smoothstep(0.35, 1.15, r);
+      gl_FragColor = vec4(vec3(R,G,B) * vig, 1.0);
+    }
+  `;
+
+  function compile(gl, type, src){
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
+      console.error(gl.getShaderInfoLog(s));
+    }
+    return s;
+  }
+
+  function makeRenderer(canvas){
+    const gl = canvas.getContext('webgl', {preserveDrawingBuffer:true});
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
+    gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(prog, 'aPos');
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+    const uTex = gl.getUniformLocation(prog, 'uTex');
+    const uAspect = gl.getUniformLocation(prog, 'uAspect');
+    const uK = gl.getUniformLocation(prog, 'uK');
+    const uChroma = gl.getUniformLocation(prog, 'uChroma');
+    const uVignette = gl.getUniformLocation(prog, 'uVignette');
+
+    function setImage(image){
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    }
+
+    function render(aspect, k, chroma, vignette){
+      gl.viewport(0,0,canvas.width, canvas.height);
+      gl.uniform1i(uTex, 0);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.uniform1f(uAspect, aspect);
+      gl.uniform1f(uK, k);
+      gl.uniform1f(uChroma, chroma);
+      gl.uniform1f(uVignette, vignette);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+
+    return { gl, setImage, render };
+  }
+
+  const preview = makeRenderer(afterCanvas);
+  let fullRenderer = null; // created lazily at export time
+
+  function currentParams(){
+    return {
+      k: (parseInt(sK.value,10)/100) * 1.2,
+      chroma: (parseInt(sC.value,10)/100) * 0.05,
+      vignette: (parseInt(sV.value,10)/100) * 0.7
+    };
+  }
+
+  function drawPreview(){
+    if(!img) return;
+    const p = currentParams();
+    const aspect = naturalW / naturalH;
+    preview.render(aspect, p.k, p.chroma, p.vignette);
+  }
+
+  function drawBefore(){
+    const ctx = beforeCanvas.getContext('2d');
+    ctx.clearRect(0,0,beforeCanvas.width, beforeCanvas.height);
+    ctx.drawImage(img, 0, 0, beforeCanvas.width, beforeCanvas.height);
+  }
+
+  // ---------- File handling ----------
+  function loadFile(file){
+    if(!file || !file.type.startsWith('image/')) return;
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      img = image;
+      naturalW = image.naturalWidth;
+      naturalH = image.naturalHeight;
+
+      const dispW = Math.min(900, naturalW);
+      const dispH = Math.round(dispW * naturalH / naturalW);
+
+      [afterCanvas, beforeCanvas].forEach(c => { c.width = dispW; c.height = dispH; });
+      viewfinder.style.display = 'block';
+      panel.style.display = 'block';
+      dropzone.style.display = 'none';
+
+      preview.setImage(image);
+      drawPreview();
+      drawBefore();
+      setDivider(50);
+      URL.revokeObjectURL(url);
+    };
+    image.src = url;
+  }
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', e => loadFile(e.target.files[0]));
+  ['dragenter','dragover'].forEach(ev => dropzone.addEventListener(ev, e => {
+    e.preventDefault(); dropzone.classList.add('drag');
+  }));
+  ['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, e => {
+    e.preventDefault(); dropzone.classList.remove('drag');
+  }));
+  dropzone.addEventListener('drop', e => loadFile(e.dataTransfer.files[0]));
+
+  // ---------- Sliders ----------
+  function syncLabels(){
+    vK.textContent = sK.value;
+    vC.textContent = sC.value;
+    vV.textContent = sV.value;
+  }
+  [sK, sC, sV].forEach(s => s.addEventListener('input', () => { syncLabels(); drawPreview(); }));
+  syncLabels();
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    sK.value = 40; sC.value = 15; sV.value = 25;
+    syncLabels(); drawPreview();
+  });
+  document.getElementById('newBtn').addEventListener('click', () => {
+    img = null;
+    viewfinder.style.display = 'none';
+    panel.style.display = 'none';
+    dropzone.style.display = 'block';
+    fileInput.value = '';
+  });
+
+  // ---------- Split divider drag ----------
+  function setDivider(pct){
+    pct = Math.max(0, Math.min(100, pct));
+    beforeCanvas.style.clipPath = `inset(0 ${100-pct}% 0 0)`;
+    divider.style.left = pct + '%';
+  }
+  let dragging = false;
+  function pointerToPct(clientX){
+    const rect = viewfinder.getBoundingClientRect();
+    return ((clientX - rect.left) / rect.width) * 100;
+  }
+  viewfinder.addEventListener('pointerdown', e => { dragging = true; setDivider(pointerToPct(e.clientX)); });
+  window.addEventListener('pointermove', e => { if(dragging) setDivider(pointerToPct(e.clientX)); });
+  window.addEventListener('pointerup', () => dragging = false);
+
+  // ---------- Export at full resolution ----------
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    if(!img) return;
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = naturalW;
+    exportCanvas.height = naturalH;
+    if(!fullRenderer) fullRenderer = makeRenderer(exportCanvas);
+    fullRenderer.setImage(img);
+    const p = currentParams();
+    fullRenderer.render(naturalW/naturalH, p.k, p.chroma, p.vignette);
+
+    exportCanvas.toBlob(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'ultra-wide-simulated.jpg';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }, 'image/jpeg', 0.94);
+  });
+})();
+</script>
+</body>
+</html>
