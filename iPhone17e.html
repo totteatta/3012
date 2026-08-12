@@ -12,7 +12,9 @@
             --primary-color: #007aff;
             --apple-green: #34c759;
             --apple-purple: #af52de;
-            --apple-orange: #ff9500; /* Apple Pencil用に追加 */
+            --apple-orange: #ff9500;
+            --fitbit-teal: #00a8b5; /* Fitbit用追加 */
+            --apple-cyan: #32ade6;   /* AirPods 4用追加 */
             --shadow: 0 10px 20px rgba(0,0,0,0.05), 0 2px 6px rgba(0,0,0,0.05);
         }
 
@@ -83,7 +85,9 @@
         /* 各カードのアクセントカラー */
         .card.airpods { border-top-color: var(--apple-green); }
         .card.ipadmini { border-top-color: var(--apple-purple); }
-        .card.applepencil { border-top-color: var(--apple-orange); } /* 追加 */
+        .card.applepencil { border-top-color: var(--apple-orange); }
+        .card.fitbit { border-top-color: var(--fitbit-teal); } /* 追加 */
+        .card.airpods4 { border-top-color: var(--apple-cyan); } /* 追加 */
 
         h1 {
             font-size: 1.3rem;
@@ -210,15 +214,47 @@
             <div class="cost-amount" id="cost-value-6">¥0</div>
         </div>
     </div>
+
+    <div class="card fitbit">
+        <h1>Fitbit Air</h1>
+        <div class="start-date">購入日: 2026年7月7日</div>
+        
+        <div class="counter-display">
+            <div class="value" id="main-counter-7">0<span class="unit">日</span></div>
+            <div class="sub-value" id="sub-counter-7">（または 0時間）</div>
+        </div>
+        <hr>
+        <div class="cost-display">
+            <h2 id="cost-title-7">16,800円の換算</h2>
+            <div class="cost-amount" id="cost-value-7">¥0</div>
+        </div>
+    </div>
+
+    <div class="card airpods4">
+        <h1>AirPods 4</h1>
+        <div class="start-date">購入日: 2026年7月31日</div>
+        
+        <div class="counter-display">
+            <div class="value" id="main-counter-8">0<span class="unit">日</span></div>
+            <div class="sub-value" id="sub-counter-8">（または 0時間）</div>
+        </div>
+        <hr>
+        <div class="cost-display">
+            <h2 id="cost-title-8">23,800円の換算</h2>
+            <div class="cost-amount" id="cost-value-8">¥0</div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // データ定義（Apple Pencilを末尾に追加）
+    // データ定義（Fitbit Air, AirPods 4を追加）
     const targets = [
         { id: 1, name: "99,800円", amount: 99800, date: new Date('2026-04-02T00:00:00') },
         { id: 2, name: "19,800円", amount: 19800, date: new Date('2022-02-05T00:00:00') },
         { id: 5, name: "72,800円", amount: 72800, date: new Date('2022-07-14T00:00:00') },
-        { id: 6, name: "19,880円", amount: 19880, date: new Date('2022-07-14T00:00:00') }
+        { id: 6, name: "19,880円", amount: 19880, date: new Date('2022-07-14T00:00:00') },
+        { id: 7, name: "16,800円", amount: 16800, date: new Date('2026-07-07T00:00:00') },
+        { id: 8, name: "23,800円", amount: 23800, date: new Date('2026-07-31T00:00:00') }
     ];
 
     let currentMode = 'day'; 
